@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get_x/get_core/src/get_main.dart';
+import 'package:get_x/get_navigation/src/extension_navigation.dart';
+import 'package:get_x/get_navigation/src/snackbar/snackbar.dart';
+
 
 class Helpers {
   Helpers._();
@@ -15,12 +18,11 @@ class Helpers {
       message,
       backgroundColor: Colors.green.shade600,
       colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.top,
       duration: const Duration(seconds: 3),
       margin: const EdgeInsets.all(12),
       borderRadius: 12,
       icon: const Icon(Icons.check_circle, color: Colors.white),
-      snackStyle: SnackStyle.FLOATING,
     );
   }
 
@@ -31,12 +33,11 @@ class Helpers {
       message,
       backgroundColor: Colors.red.shade600,
       colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.top,
       duration: const Duration(seconds: 4),
       margin: const EdgeInsets.all(12),
       borderRadius: 12,
       icon: const Icon(Icons.error_outline, color: Colors.white),
-      snackStyle: SnackStyle.FLOATING,
     );
   }
 
@@ -47,12 +48,11 @@ class Helpers {
       message,
       backgroundColor: Colors.orange.shade600,
       colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.top,
       duration: const Duration(seconds: 3),
       margin: const EdgeInsets.all(12),
       borderRadius: 12,
       icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
-      snackStyle: SnackStyle.FLOATING,
     );
   }
 
@@ -63,12 +63,11 @@ class Helpers {
       message,
       backgroundColor: Colors.blue.shade600,
       colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: SnackPosition.top,
       duration: const Duration(seconds: 3),
       margin: const EdgeInsets.all(12),
       borderRadius: 12,
       icon: const Icon(Icons.info_outline, color: Colors.white),
-      snackStyle: SnackStyle.FLOATING,
     );
   }
 
@@ -85,7 +84,7 @@ class Helpers {
       message,
       backgroundColor: Colors.black87,
       colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.bottom,
       duration: duration,
       margin: const EdgeInsets.all(12),
       borderRadius: 12,
@@ -124,7 +123,9 @@ class Helpers {
   }) async {
     final result = await Get.dialog<bool>(
       AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Row(
           children: [
             if (icon != null) ...[
@@ -156,7 +157,10 @@ class Helpers {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
             ),
             child: Text(confirmText),
           ),
@@ -183,7 +187,9 @@ class Helpers {
 
     final result = await Get.dialog<String>(
       AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         title: Text(title, style: const TextStyle(fontSize: 18)),
         content: Form(
           key: formKey,
@@ -228,7 +234,10 @@ class Helpers {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
             ),
             child: Text(confirmText),
           ),
@@ -245,8 +254,10 @@ class Helpers {
     String? itemName,
   }) {
     final message = itemName != null
-        ? 'Voulez-vous vraiment supprimer "$itemName" ? Cette action est irréversible.'
-        : 'Voulez-vous vraiment supprimer cet élément ? Cette action est irréversible.';
+        ? 'Voulez-vous vraiment supprimer "$itemName" ? '
+            'Cette action est irréversible.'
+        : 'Voulez-vous vraiment supprimer cet élément ? '
+            'Cette action est irréversible.';
 
     return showConfirmDialog(
       title: title,
@@ -279,7 +290,10 @@ class Helpers {
         canPop: false,
         child: Center(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32,
+              vertical: 24,
+            ),
             margin: const EdgeInsets.symmetric(horizontal: 60),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -343,12 +357,13 @@ class Helpers {
             : null,
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
             Container(
               margin: const EdgeInsets.only(top: 12, bottom: 8),
               width: 40,
@@ -381,7 +396,10 @@ class Helpers {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 8,
+            ),
             child: Row(
               children: [
                 Text(
@@ -425,7 +443,8 @@ class Helpers {
       context: Get.context!,
       initialDate: initialDate ?? DateTime.now(),
       firstDate: firstDate ?? DateTime(2020),
-      lastDate: lastDate ?? DateTime.now().add(const Duration(days: 365 * 3)),
+      lastDate:
+          lastDate ?? DateTime.now().add(const Duration(days: 365 * 3)),
       locale: const Locale('fr', 'FR'),
       builder: (context, child) {
         return Theme(
@@ -472,7 +491,7 @@ class Helpers {
 
     return {
       'date': date,
-      'time': time, // peut être null si l'utilisateur annule
+      'time': time,
     };
   }
 
@@ -490,7 +509,7 @@ class Helpers {
     return parts[0][0].toUpperCase();
   }
 
-  /// Tronquer un texte → "Lorem ipsum dolor..." 
+  /// Tronquer un texte → "Lorem ipsum dolor..."
   static String truncate(String text, int maxLength) {
     if (text.length <= maxLength) return text;
     return '${text.substring(0, maxLength)}...';

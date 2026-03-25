@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
 
 class DateTimeHelper {
   DateTimeHelper._();
@@ -8,12 +9,17 @@ class DateTimeHelper {
   // ═══════════════════════════════════════════════════════
   static final DateFormat _apiDateFormat = DateFormat('yyyy-MM-dd');
   static final DateFormat _displayDate = DateFormat('dd/MM/yyyy');
-  static final DateFormat _displayDateFull = DateFormat('dd MMMM yyyy', 'fr');
   static final DateFormat _displayDateTime = DateFormat('dd/MM/yyyy HH:mm');
-  static final DateFormat _displayDayMonth = DateFormat('dd MMM', 'fr');
-  static final DateFormat _displayMonthYear = DateFormat('MMMM yyyy', 'fr');
-  static final DateFormat _displayDayName = DateFormat('EEEE', 'fr');
-  static final DateFormat _displayDayNameShort = DateFormat('EEE', 'fr');
+
+  // ─── Formats avec locale : créés à la demande pour éviter
+  //     les crashs si la locale 'fr' n'est pas initialisée ─────
+  static DateFormat _safeFr(String pattern) {
+    try {
+      return DateFormat(pattern, 'fr');
+    } catch (_) {
+      return DateFormat(pattern);
+    }
+  }
 
   // ═══════════════════════════════════════════════════════
   // FORMATER POUR L'API
@@ -31,11 +37,8 @@ class DateTimeHelper {
   }
 
   /// TimeOfDay → "18:00:00"
-  static String timeOfDayToApi(dynamic timeOfDay) {
-    // timeOfDay est un TimeOfDay de Flutter
-    final hour = (timeOfDay as dynamic).hour as int;
-    final minute = (timeOfDay as dynamic).minute as int;
-    return toApiTime(hour, minute);
+  static String timeOfDayToApi(TimeOfDay timeOfDay) {
+    return toApiTime(timeOfDay.hour, timeOfDay.minute);
   }
 
   /// Date d'aujourd'hui au format API → "2024-12-31"
@@ -79,6 +82,13 @@ class DateTimeHelper {
     }
   }
 
+  /// "18:00:00" → TimeOfDay
+  static TimeOfDay? parseApiTimeOfDay(String? timeStr) {
+    final parsed = parseApiTime(timeStr);
+    if (parsed == null) return null;
+    return TimeOfDay(hour: parsed['hour']!, minute: parsed['minute']!);
+  }
+
   /// "18:00:00" → hour (int)
   static int? parseHour(String? timeStr) {
     final parsed = parseApiTime(timeStr);
@@ -107,7 +117,7 @@ class DateTimeHelper {
     final date = parseApiDate(apiDate);
     if (date == null) return '';
     try {
-      return _displayDateFull.format(date);
+      return _safeFr('dd MMMM yyyy').format(date);
     } catch (_) {
       return _displayDate.format(date);
     }
@@ -139,7 +149,7 @@ class DateTimeHelper {
   /// DateTime → "31 déc"
   static String displayDayMonth(DateTime date) {
     try {
-      return _displayDayMonth.format(date);
+      return _safeFr('dd MMM').format(date);
     } catch (_) {
       return DateFormat('dd MMM').format(date);
     }
@@ -155,7 +165,7 @@ class DateTimeHelper {
   /// DateTime → "Janvier 2024"
   static String displayMonthYear(DateTime date) {
     try {
-      return _displayMonthYear.format(date);
+      return _safeFr('MMMM yyyy').format(date);
     } catch (_) {
       return DateFormat('MMMM yyyy').format(date);
     }
@@ -164,7 +174,7 @@ class DateTimeHelper {
   /// DateTime → "Lundi"
   static String displayDayName(DateTime date) {
     try {
-      return _displayDayName.format(date);
+      return _safeFr('EEEE').format(date);
     } catch (_) {
       return DateFormat('EEEE').format(date);
     }
@@ -173,7 +183,7 @@ class DateTimeHelper {
   /// DateTime → "Lun"
   static String displayDayNameShort(DateTime date) {
     try {
-      return _displayDayNameShort.format(date);
+      return _safeFr('EEE').format(date);
     } catch (_) {
       return DateFormat('EEE').format(date);
     }
@@ -248,8 +258,10 @@ class DateTimeHelper {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final endOfWeek = startOfWeek.add(const Duration(days: 6));
-    final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-    final end = DateTime(endOfWeek.year, endOfWeek.month, endOfWeek.day, 23, 59, 59);
+    final start =
+        DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    final end = DateTime(
+        endOfWeek.year, endOfWeek.month, endOfWeek.day, 23, 59, 59);
     return date.isAfter(start.subtract(const Duration(seconds: 1))) &&
         date.isBefore(end.add(const Duration(seconds: 1)));
   }
@@ -266,7 +278,7 @@ class DateTimeHelper {
   // LABELS RELATIFS
   // ═══════════════════════════════════════════════════════
 
-  /// Retourne un label relatif : "Aujourd'hui", "Demain", "Hier", ou la date
+  /// "Aujourd'hui", "Demain", "Hier", ou la date
   static String relativeLabel(String? apiDate) {
     if (apiDate == null) return '';
     if (isToday(apiDate)) return 'Aujourd\'hui';
@@ -275,7 +287,7 @@ class DateTimeHelper {
     return displayDate(apiDate);
   }
 
-  /// Label relatif avec jour → "Aujourd'hui", "Demain", "Lundi 31/12"
+  /// "Aujourd'hui", "Demain", "Lundi 31/12/2024"
   static String relativeLabelWithDay(String? apiDate) {
     if (apiDate == null) return '';
     if (isToday(apiDate)) return 'Aujourd\'hui';
@@ -285,7 +297,6 @@ class DateTimeHelper {
     if (date == null) return '';
     final dayName = displayDayName(date);
     final formattedDate = displayDate(apiDate);
-    // Capitalize first letter
     final capitalizedDay = dayName[0].toUpperCase() + dayName.substring(1);
     return '$capitalizedDay $formattedDate';
   }
@@ -299,7 +310,7 @@ class DateTimeHelper {
     return date.difference(today).inDays;
   }
 
-  /// Label des jours restants → "Dans 3 jours", "Il y a 2 jours", etc.
+  /// "Dans 3 jours", "Il y a 2 jours", etc.
   static String daysRemainingLabel(String? apiDate) {
     final days = daysRemaining(apiDate);
     if (days == 0) return 'Aujourd\'hui';
@@ -313,7 +324,7 @@ class DateTimeHelper {
   // GÉNÉRATEURS DE DATES
   // ═══════════════════════════════════════════════════════
 
-  /// Liste des jours d'une semaine contenant [date]
+  /// Liste des 7 jours de la semaine contenant [date]
   static List<DateTime> getWeekDays(DateTime date) {
     final startOfWeek = date.subtract(Duration(days: date.weekday - 1));
     return List.generate(
@@ -332,7 +343,7 @@ class DateTimeHelper {
     );
   }
 
-  /// Vérifie si un DateTime est le même jour qu'aujourd'hui
+  /// Vérifie si un DateTime est aujourd'hui
   static bool isTodayDate(DateTime date) {
     final now = DateTime.now();
     return date.year == now.year &&

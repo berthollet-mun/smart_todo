@@ -1,7 +1,10 @@
-import 'package:get/get.dart';
+import 'package:get_x/get_core/src/get_main.dart';
+import 'package:get_x/get_instance/src/extension_instance.dart';
+import 'package:get_x/get_instance/src/lifecycle.dart';
+import 'package:smart_todo/data/models/user_model.dart';
+import 'package:smart_todo/data/resposnses/api_response.dart';
 
-import '../../data/models/user_model.dart';
-import '../../data/responses/api_response.dart';
+
 import 'api_service.dart';
 import 'storage_service.dart';
 

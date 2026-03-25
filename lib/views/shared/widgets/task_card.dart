@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:smart_todo/core/utils/widgets/date_time_helper.dart';
+import 'package:smart_todo/data/models/task_list_model.dart';
 
-import '../../core/utils/date_time_helper.dart';
-import '../../data/models/task_list_model.dart';
 import 'progress_bar.dart';
 import 'status_chip.dart';
 
