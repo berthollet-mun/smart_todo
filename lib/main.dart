@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+ 
+ import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,115 +8,358 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Gestion Inscription',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const GestionInscriptionPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class Etudiant {
+  String nom;
+  String postNom;
+  String email;
+  String telephone;
+  String filiere;
+  DateTime dateInscription;
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  Etudiant({
+    required this.nom,
+    required this.postNom,
+    required this.email,
+    required this.telephone,
+    required this.filiere,
+    required this.dateInscription,
+  });
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class GestionInscriptionPage extends StatefulWidget {
+  const GestionInscriptionPage({super.key});
 
-  void _incrementCounter() {
+  @override
+  State<GestionInscriptionPage> createState() =>
+      _GestionInscriptionPageState();
+}
+
+class _GestionInscriptionPageState extends State<GestionInscriptionPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _nomController = TextEditingController();
+  final TextEditingController _postNomController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _telephoneController = TextEditingController();
+  final TextEditingController _filiereController = TextEditingController();
+
+  final List<Etudiant> _etudiants = [];
+
+  int? _indexEnEdition;
+
+  @override
+  void dispose() {
+    _nomController.dispose();
+    _postNomController.dispose();
+    _emailController.dispose();
+    _telephoneController.dispose();
+    _filiereController.dispose();
+    super.dispose();
+  }
+
+  void _viderFormulaire() {
+    _nomController.clear();
+    _postNomController.clear();
+    _emailController.clear();
+    _telephoneController.clear();
+    _filiereController.clear();
+    _indexEnEdition = null;
+  }
+
+  void _enregistrerEtudiant() {
+    if (_formKey.currentState!.validate()) {
+      final etudiant = Etudiant(
+        nom: _nomController.text.trim(),
+        postNom: _postNomController.text.trim(),
+        email: _emailController.text.trim(),
+        telephone: _telephoneController.text.trim(),
+        filiere: _filiereController.text.trim(),
+        dateInscription: DateTime.now(),
+      );
+
+      setState(() {
+        if (_indexEnEdition == null) {
+          _etudiants.add(etudiant);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Inscription ajoutée avec succès'),
+            ),
+          );
+        } else {
+          _etudiants[_indexEnEdition!] = etudiant;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Inscription modifiée avec succès'),
+            ),
+          );
+        }
+      });
+
+      _viderFormulaire();
+    }
+  }
+
+  void _modifierEtudiant(int index) {
+    final etudiant = _etudiants[index];
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _nomController.text = etudiant.nom;
+      _postNomController.text = etudiant.postNom;
+      _emailController.text = etudiant.email;
+      _telephoneController.text = etudiant.telephone;
+      _filiereController.text = etudiant.filiere;
+      _indexEnEdition = index;
     });
+  }
+
+  void _supprimerEtudiant(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmation'),
+        content: const Text('Voulez-vous vraiment supprimer cette inscription ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _etudiants.removeAt(index);
+              });
+
+              Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Inscription supprimée'),
+                ),
+              );
+            },
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')}/"
+        "${date.month.toString().padLeft(2, '0')}/"
+        "${date.year}";
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Gestion des inscriptions'),
+        centerTitle: true,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Text(
+                        _indexEnEdition == null
+                            ? 'Nouvelle inscription'
+                            : 'Modifier l\'inscription',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      TextFormField(
+                        controller: _nomController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nom',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Veuillez entrer le nom';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextFormField(
+                        controller: _postNomController,
+                        decoration: const InputDecoration(
+                          labelText: 'Post-nom',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Veuillez entrer le post-nom';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Veuillez entrer l\'email';
+                          }
+                          if (!value.contains('@') || !value.contains('.')) {
+                            return 'Email invalide';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextFormField(
+                        controller: _telephoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: 'Téléphone',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Veuillez entrer le téléphone';
+                          }
+                          if (value.trim().length < 8) {
+                            return 'Numéro invalide';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextFormField(
+                        controller: _filiereController,
+                        decoration: const InputDecoration(
+                          labelText: 'Filière',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Veuillez entrer la filière';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _enregistrerEtudiant,
+                              child: Text(
+                                _indexEnEdition == null
+                                    ? 'Enregistrer'
+                                    : 'Mettre à jour',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _viderFormulaire,
+                              child: const Text('Annuler'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Expanded(
+              child: _etudiants.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Aucune inscription enregistrée',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _etudiants.length,
+                      itemBuilder: (context, index) {
+                        final etudiant = _etudiants[index];
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: ListTile(
+                            title: Text(
+                              "${etudiant.nom} ${etudiant.postNom}",
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Email : ${etudiant.email}"),
+                                Text("Téléphone : ${etudiant.telephone}"),
+                                Text("Filière : ${etudiant.filiere}"),
+                                Text(
+                                  "Date : ${_formatDate(etudiant.dateInscription)}",
+                                ),
+                              ],
+                            ),
+                            trailing: Wrap(
+                              spacing: 8,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.orange),
+                                  onPressed: () => _modifierEtudiant(index),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () => _supprimerEtudiant(index),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
