@@ -36,6 +36,6 @@ class ApiResponse {
   @override
   String toString() {
     return 'ApiResponse(isSuccess: $isSuccess, message: $message, '
-        'errorCode: $errorCode, data: $data)';
+        'errorCode: $errorCode)';
   }
 }
